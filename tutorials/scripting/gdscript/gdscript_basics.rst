@@ -1,4 +1,4 @@
-.. _doc_gdscript:
+.. _doc_gdscript_reference:
 
 GDScript reference
 ==================
@@ -184,17 +184,17 @@ in case you want to take a look under the hood.
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
 | super      | Resolves the scope of the parent method. See `Inheritance`_.                                                                                      |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
-| signal     | Defines a signal.                                                                                                                                 |
+| signal     | Defines a signal. See `Signals`_.                                                                                                                 |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
-| func       | Defines a function.                                                                                                                               |
+| func       | Defines a function.  See `Functions`_.                                                                                                            |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
 | static     | Defines a static function or a static member variable.                                                                                            |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
-| const      | Defines a constant.                                                                                                                               |
+| const      | Defines a constant. See `Constants`_.                                                                                                             |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
-| enum       | Defines an enum.                                                                                                                                  |
+| enum       | Defines an enum. See `Enums`_.                                                                                                                    |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
-| var        | Defines a variable.                                                                                                                               |
+| var        | Defines a variable. See `Variables`_.                                                                                                             |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
 | breakpoint | Editor helper for debugger breakpoints. Unlike breakpoints created by clicking in the gutter, ``breakpoint`` is stored in the script itself.      |
 |            | This makes it persistent across different machines when using version control.                                                                    |
@@ -889,6 +889,8 @@ native or user class, or enum. Nested array types (like ``Array[Array[int]]``) a
 
     The only exception was made for the ``Array`` (``Array[Variant]``) type, for user convenience
     and compatibility with old code. However, operations on untyped arrays are considered unsafe.
+
+.. _doc_gdscript_packed_arrays:
 
 Packed arrays
 ^^^^^^^^^^^^^
@@ -1948,6 +1950,16 @@ Here's a class file example:
 If you want to use ``extends`` too, you can keep both on the same line::
 
     class_name MyNode extends Node
+
+Named classes are globally registered, which means they become available to use
+in other scripts without the need to ``load`` or ``preload`` them:
+
+.. code-block:: gdscript
+
+    var player
+
+    func _ready():
+        player = Character.new()
 
 .. note::
 
