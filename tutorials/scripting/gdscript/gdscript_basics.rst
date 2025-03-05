@@ -1,4 +1,4 @@
-.. _doc_gdscript:
+.. _doc_gdscript_reference:
 
 GDScript reference
 ==================
@@ -184,17 +184,17 @@ in case you want to take a look under the hood.
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
 | super      | Resolves the scope of the parent method. See `Inheritance`_.                                                                                      |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
-| signal     | Defines a signal.                                                                                                                                 |
+| signal     | Defines a signal. See `Signals`_.                                                                                                                 |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
-| func       | Defines a function.                                                                                                                               |
+| func       | Defines a function.  See `Functions`_.                                                                                                            |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
 | static     | Defines a static function or a static member variable.                                                                                            |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
-| const      | Defines a constant.                                                                                                                               |
+| const      | Defines a constant. See `Constants`_.                                                                                                             |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
-| enum       | Defines an enum.                                                                                                                                  |
+| enum       | Defines an enum. See `Enums`_.                                                                                                                    |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
-| var        | Defines a variable.                                                                                                                               |
+| var        | Defines a variable. See `Variables`_.                                                                                                             |
 +------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
 | breakpoint | Editor helper for debugger breakpoints. Unlike breakpoints created by clicking in the gutter, ``breakpoint`` is stored in the script itself.      |
 |            | This makes it persistent across different machines when using version control.                                                                    |
@@ -889,6 +889,8 @@ native or user class, or enum. Nested array types (like ``Array[Array[int]]``) a
 
     The only exception was made for the ``Array`` (``Array[Variant]``) type, for user convenience
     and compatibility with old code. However, operations on untyped arrays are considered unsafe.
+
+.. _doc_gdscript_packed_arrays:
 
 Packed arrays
 ^^^^^^^^^^^^^
@@ -1949,6 +1951,16 @@ If you want to use ``extends`` too, you can keep both on the same line::
 
     class_name MyNode extends Node
 
+Named classes are globally registered, which means they become available to use
+in other scripts without the need to ``load`` or ``preload`` them:
+
+.. code-block:: gdscript
+
+    var player
+
+    func _ready():
+        player = Character.new()
+
 .. note::
 
     Godot initializes non-static variables every time you create an instance,
@@ -2437,20 +2449,19 @@ arguments when you emit signals; it's up to you to emit the correct values.
 
 .. image:: img/gdscript_basics_signals_node_tab_1.png
 
-GDScript can bind an array of values to connections between a signal
-and a method. When the signal is emitted, the callback method receives
-the bound values. These bound arguments are unique to each connection,
-and the values will stay the same.
+You can also create copies of GDScript Callable objects which accept additional
+arguments using :ref:`Callable.bind() <class_Callable_method_bind>`. This
+allows you to add extra information to the connection if the emitted signal
+itself doesn't give you access to all the data that you need.
 
-You can use this array of values to add extra constant information to the
-connection if the emitted signal itself doesn't give you access to all the data
-that you need.
+When the signal is emitted, the callback method receives the bound values, in
+addition to those provided by the signal.
 
 Building on the example above, let's say we want to display a log of the damage
 taken by each character on the screen, like ``Player1 took 22 damage.``. The
 ``health_changed`` signal doesn't give us the name of the character that took
 damage. So when we connect the signal to the in-game console, we can add the
-character's name in the binds array argument::
+character's name using the bind method::
 
     # game.gd
 
@@ -2460,7 +2471,7 @@ character's name in the binds array argument::
 
         character_node.health_changed.connect(battle_log_node._on_Character_health_changed.bind(character_node.name))
 
-Our ``BattleLog`` node receives each element in the binds array as an extra argument::
+Our ``BattleLog`` node receives each bound element as an extra argument::
 
     # battle_log.gd
 
