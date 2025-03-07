@@ -8,9 +8,9 @@ Godot supports video playback with the :ref:`class_VideoStreamPlayer` node.
 Supported playback formats
 --------------------------
 
-The only supported format in core is **Ogg Theora** (not to be confused with Ogg
-Vorbis audio). It's possible for extensions to bring support for additional
-formats, but no such extensions exist yet as of July 2022.
+The only supported format in core is **Ogg Theora** (not to be confused with
+Ogg Vorbis audio) with optional Ogg Vorbis audio tracks. It's possible for
+extensions to bring support for additional formats.
 
 H.264 and H.265 cannot be supported in core Godot, as they are both encumbered
 by software patents. AV1 is royalty-free, but it remains slow to decode on the
@@ -156,6 +156,7 @@ There are several limitations with the current implementation of video playback 
 - Changing playback speed is not supported. VideoStreamPlayer also won't follow
   :ref:`Engine.time_scale<class_Engine_property_time_scale>`.
 - Streaming a video from a URL is not supported.
+- Only mono and stereo audio output is supported.
 
 .. _doc_playing_videos_recommended_theora_encoding_settings:
 
@@ -181,9 +182,8 @@ you should use a lossless or uncompressed format as an intermediate format to
 maximize the quality of the output Ogg Theora video, but this can require a lot
 of disk space.
 
-`HandBrake <https://handbrake.fr/>`__
-(GUI) and `FFmpeg <https://ffmpeg.org/>`__ (CLI) are popular open source tools
-for this purpose. FFmpeg has a steeper learning curve, but it's more powerful.
+`FFmpeg <https://ffmpeg.org/>`__ (CLI) is a popular open source tool
+for this purpose. FFmpeg has a steep learning curve, but it's powerful tool.
 
 Here are example FFmpeg commands to convert an MP4 video to Ogg Theora. Since
 FFmpeg supports a lot of input formats, you should be able to use the commands
@@ -194,6 +194,18 @@ below with almost any input video format (AVI, MOV, WebM, …).
    Make sure your copy of FFmpeg is compiled with libtheora and libvorbis support.
    You can check this by running ``ffmpeg`` without any arguments, then looking
    at the ``configuration:`` line in the command output.
+
+.. UPDATE: When the FFmpeg bugfixes for https://trac.ffmpeg.org/ticket/11451 and
+.. https://trac.ffmpeg.org/ticket/11454 are included in a stable FFmpeg release,
+.. this note can be removed. That will likely be FFmpeg 7.2 or 8.0, and will
+.. likely happen during the Godot 4.5 or 4.6 release cycle.
+
+.. warning::
+
+   All FFmpeg releases before Feb 20th, 2025 could produce bad video streams
+   due to a couple of bugs. It's highly recommended to use one of the latest
+   static daily builds, or build FFmpeg from their master branch where they're
+   already fixed.
 
 Balancing quality and file size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -217,6 +229,14 @@ dropouts in case of high system load. See
 for a table listing Ogg Vorbis audio quality presets and their respective
 variable bitrates.
 
+The **GOP (Group of Pictures) size** (``-g:v``) is the max interval between
+keyframes. Increasing this value can improve compression with almost no impact
+on quality. The valid range goes from ``0`` to ``2,147,483,648``, although
+compression benefits will fade away and even be reversed as the GOP size
+increases. The default size (``12``) is too low for most types of content, it's
+therefore recommended to test higher GOP sizes before reducing video quality.
+Values between ``64`` and ``512`` usually give the best compression.
+
 FFmpeg: Convert while preserving original video resolution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -227,7 +247,7 @@ static scenes).
 
 ::
 
-    ffmpeg -i input.mp4 -q:v 6 -q:a 6 output.ogv
+    ffmpeg -i input.mp4 -q:v 6 -q:a 6 -g:v 64 output.ogv
 
 FFmpeg: Resize the video then convert it
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -238,7 +258,7 @@ significantly if the source is recorded at a higher resolution than 720p:
 
 ::
 
-    ffmpeg -i input.mp4 -vf "scale=-1:720" -q:v 6 -q:a 6 output.ogv
+    ffmpeg -i input.mp4 -vf "scale=-1:720" -q:v 6 -q:a 6 -g:v 64 output.ogv
 
 
 .. Chroma Key Functionality Documentation
